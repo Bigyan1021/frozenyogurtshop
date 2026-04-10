@@ -1,4 +1,4 @@
-name: Build and Deploy backend app to AWS EC2
+# Build
 
 on:
   push:
@@ -17,12 +17,26 @@ jobs:
     # Log in to DockerHub
     - name: Log in to dockerhub
       run: |
-        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --token-stdin
+        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
       
     # Build and Push the Docker image
     - name: Build and Push Docker Image
       run: |
         BRANCH_NAME=${{ github.ref_name }}
-        docker build -t frozenwebapp -f Dockerfile .
-        docker tag frozenwebapp:latest ${{ secrets.DOCKERHUB_USERNAME }}/frozenwebapp:$BRANCH_NAME
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/frozenwebapp:$BRANCH_NAME
+        docker build -t frozen-webapp -f Dockerfile .
+        docker tag frozen-webapp:latest ${{ secrets.DOCKERHUB_USERNAME }}/frozen-webapp:$BRANCH_NAME
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/frozen-webapp:$BRANCH_NAME
+
+    # Deploy Application
+    - name: Deploy application
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.INSTANCA_IP }}
+        username: ubuntu
+        key: ${{ secrets.SSH_private_KEY }}
+        options: "-o StrictHostKeyChecking=no"
+        script: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          cd /home/ubuntu/frozen-webapp
+          docker compose up -d (#If deploying for the first time)
+	  docker compose up -d --force-recreate (#After first deployment, use this one and remove the above step)
