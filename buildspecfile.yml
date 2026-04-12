@@ -1,5 +1,10 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+    IMAGE_REPO_NAME: frozen-webapp
+
 phases:
   pre_build:
     commands:
@@ -8,17 +13,18 @@ phases:
       - echo "Account ID: $AWS_ACCOUNT_ID"
       - echo "Logging in to ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+  build:
     commands:
-      - echo Extracting branch name...
-      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')  # Extracts name of branch
-      - echo Building the Docker image for branch $BRANCH_NAME...
+      - echo "Extracting branch name..."
+      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')
+      - echo "Branch: $BRANCH_NAME"
+      - echo "Building Docker image..."
       - docker build -t frozen-webapp:latest .
-      - echo Tagging the Docker image...
+      - echo "Tagging Docker image..."
       - docker tag frozen-webapp:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$BRANCH_NAME
 
   post_build:
     commands:
-      - echo Pushing the Docker image...
+      - echo "Pushing Docker image..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$BRANCH_NAME
-      
-      
