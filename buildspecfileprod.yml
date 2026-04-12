@@ -1,0 +1,28 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - |
+        if [ -z "$CODEBUILD_WEBHOOK_TRIGGER" ]; then
+          echo "CODEBUILD_WEBHOOK_TRIGGER is not set!"
+          exit 1
+        fi
+        export TAG_VERSION_NUMBER=$(echo $CODEBUILD_WEBHOOK_TRIGGER | sed 's/.*\///')  # Extract tag version number
+        echo "Tag version: $TAG_VERSION_NUMBER"
+
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo Login successful.
+
+  build:
+    commands:
+      - echo Building the Docker image for branch $BRANCH_NAME...
+      - docker build -t frozen-webapp:latest .  # Tag with branch name
+      - echo Tagging the Docker image...
+      - docker tag frozen-webapp:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$TAG_VERSION_NUMBER
+
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$TAG_VERSION_NUMBER
