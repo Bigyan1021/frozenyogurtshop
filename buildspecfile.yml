@@ -3,12 +3,6 @@ version: 0.2
 phases:
   pre_build:
     commands:
-     phases:
-  version: 0.2
-
-phases:
-  pre_build:
-    commands:
       - echo "Getting AWS Account ID"
       - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - echo "Account ID: $AWS_ACCOUNT_ID"
