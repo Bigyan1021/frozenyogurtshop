@@ -1,10 +1,4 @@
 version: 0.2
-
-env:
-  variables:
-    AWS_DEFAULT_REGION: us-east-1
-    IMAGE_REPO_NAME: frozen-webapp
-
 phases:
   pre_build:
     commands:
