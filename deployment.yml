@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frozen-webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frozen-webapp
+  template:
+    metadata:
+      labels:
+        app: frozen-webapp
+    spec:
+      containers: 
+        - name: frozen-webapp
+          image: bigyankc1021/frozenwebapp:main
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "5m"
+              memory: "10Mi"
+            limits:
+              cpu: "30m"
+              memory: "30Mi"
