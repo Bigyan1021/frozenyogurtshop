@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frozen-webapp
+  name: frozenwebapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frozen-webapp
+      app: frozen-web-app
   template:
     metadata:
       labels:
-        app: frozen-webapp
+        app: frozen-web-app
     spec:
       containers: 
-        - name: frozen-webapp
+        - name: frozen-web-app
           image: bigyankc1021/frozenwebapp:main
           ports:
             - containerPort: 80
